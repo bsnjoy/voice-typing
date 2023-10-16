@@ -17,6 +17,9 @@ import pyperclip
 import time
 import config
 
+# Disable the Fail-Safe, because we don't neet to stop a pyautogui script when mouse is moved to a corner of the screen
+pyautogui.FAILSAFE = False
+
 audio_queue = queue.Queue()
 
 samplerate = 16000
