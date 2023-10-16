@@ -1,3 +1,5 @@
+from pynput import keyboard
+
 # Use this command in shell to enumerate devices with microphone and their names:
 # python3 -c "import sounddevice as sd; devices = sd.query_devices(); print('\n'.join(f'{idx}: {device[\"name\"]}' for idx, device in enumerate(devices)))"
 fallback_mic = 'MacBook Air Microphone'
@@ -9,3 +11,8 @@ v_delay = 0.2
 # hotkeys to invoke dictation.
 hotkey_1 = keyboard.Key.f12
 hotkey_2 = {keyboard.Key.ctrl, keyboard.Key.shift, keyboard.Key.alt, keyboard.KeyCode.from_char('j')}
+
+# important on windows use
+- ctrl_l and ctrl_r
+- alt_l and alt_gr
+- shift and shift_r

@@ -42,13 +42,18 @@ def select_mic():
     """
     devices = sd.query_devices()
 
-    mic = config.fallback_mic
+    # return index, not name because on windows can be multiple devices with same name
+    fallback_device_ind = None
     for device in devices:
         print(device)
         if device['name'] == config.preffered_mic:
-            mic = config.preffered_mic
-            break
-    return mic
+            return device["index"]
+
+        if device['name'] == config.fallback_mic:
+            fallback_device_ind = device["index"]
+
+    return fallback_device_ind
+
 
 def save_audio_to_file(data):
     # Store year/month/day in separate folders
@@ -68,12 +73,13 @@ def transcribe_audio_to_text(fname):
     print(f"Transcribing {fname}...")
     with open(fname, 'rb') as f:
         response = requests.post(config.transcribe_server, files={'file': f})
-    
+
     return json.loads(response.text)
 
 
 def check_keys_combination():
     return all(k in keys_pressed for k in config.hotkey_2)
+
 
 def callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
@@ -85,6 +91,7 @@ def callback(indata, frames, time, status):
 
     if not processing_audio:
         last_chunk = True
+
 
 def stop_audio_stream():
     global audio_stream, audio_stream_stoped, key_to_hold
@@ -100,7 +107,7 @@ def stop_audio_stream():
 
     saved_clipboard = pyperclip.paste()
     pyperclip.copy(text)
-    
+
     with pyautogui.hold([key_to_hold]):
         time.sleep(config.v_delay)
         pyautogui.press('v')
@@ -123,6 +130,7 @@ def start_audio_stream():
                                      dtype="int16", channels=1, callback=callback)
     audio_stream.start()
 
+
 def on_press(key):
     global processing_audio
 
@@ -132,30 +140,35 @@ def on_press(key):
     if not processing_audio and (check_keys_combination() or key == config.hotkey_1):
         start_audio_stream()
 
+
 def receive_last_audio_chunk_and_stop():
     global processing_audio
     print('Stopped recording audio...')
     # We don't stop immediately, we wait for the last chunk to be processed
     processing_audio = False
 
+
 def on_release(key):
     global processing_audio, keys_pressed
+
     if key in keys_pressed:
         keys_pressed.remove(key)
 
     if processing_audio and (not check_keys_combination() or key == config.hotkey_1):
         receive_last_audio_chunk_and_stop()
 
+
 def listen_keyboard():
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
         listener.join()
-    
-print("#" * 80)
-print("Press Ctrl+C twice to stop the service")
-print("#" * 80)
-keyboard_thread = threading.Thread(target=listen_keyboard)
-keyboard_thread.start()
-while True:
-    if last_chunk and not audio_stream_stoped and not processing_audio:
-        stop_audio_stream()
-    pass  # Keep the script running
+
+
+if __name__ == '__main__':
+    print("started")
+    keyboard_thread = threading.Thread(target=listen_keyboard, daemon=True)
+    keyboard_thread.start()
+
+    while keyboard_thread.is_alive():
+        if last_chunk and not audio_stream_stoped and not processing_audio:
+            stop_audio_stream()
+        pass  # Keep the script running
