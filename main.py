@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Before run allow Settings-Microphone and Accessibility for iTerm and VSCode
+# In Mac OS Before run allow Settings-Microphone and Accessibility for iTerm and VSCode
 # https://support.apple.com/en-us/102071
 import os
 import sys
@@ -97,6 +97,7 @@ def stop_audio_stream():
     text = data['text']
     language = data['language']
     print(f"Language: {language} Got result: {text}")
+
     saved_clipboard = pyperclip.paste()
     pyperclip.copy(text)
     
@@ -104,7 +105,8 @@ def stop_audio_stream():
         time.sleep(config.v_delay)
         pyautogui.press('v')
 
-    pyperclip.copy(saved_clipboard)
+    if saved_clipboard is not None:
+        pyperclip.copy(saved_clipboard)
 
     audio_stream.stop()
     audio_stream.close()
