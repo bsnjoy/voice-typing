@@ -10,5 +10,5 @@ transcribe_server = 'http://127.0.0.1:5000/transcribe'
 v_delay = 0.2
 # hotkeys to invoke dictation.
 hotkey_1 = keyboard.Key.f12
-# on windows must use modifirers with _l or _r suffix, on mac os can use just keyboard.Key.ctrl_l instead of keyboard.Key.ctrl
-hotkey_2 = {keyboard.Key.ctrl_l, keyboard.Key.shift_l, keyboard.Key.alt_l, keyboard.KeyCode.from_char('j')}
+# on windows must use ctrl and alt modifirers with _l or _r suffix, shift should be just shift or shift_r on mac os can use anything everything without suffix. But will work with suffix also
+hotkey_2 = {keyboard.Key.ctrl_l, keyboard.Key.shift, keyboard.Key.alt_l, keyboard.KeyCode.from_char('j')}
