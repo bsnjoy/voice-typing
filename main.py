@@ -3,6 +3,7 @@
 # Before run allow Settings-Microphone and Accessibility for iTerm and VSCode
 # https://support.apple.com/en-us/102071
 import os
+import sys
 import sounddevice as sd
 import pyautogui
 import requests
@@ -27,6 +28,12 @@ audio_stream_stoped = False
 
 # Global declaration
 audio_stream = None
+
+if sys.platform == 'darwin':  # This checks if the OS is MacOS
+    key_to_hold = 'command'
+else:
+    key_to_hold = 'ctrl'
+
 
 def select_mic():
     """
@@ -80,7 +87,7 @@ def callback(indata, frames, time, status):
         last_chunk = True
 
 def stop_audio_stream():
-    global audio_stream, audio_stream_stoped
+    global audio_stream, audio_stream_stoped, key_to_hold
     audio_stream_stoped = True
     audio_data = []
     while not audio_queue.empty():
@@ -93,7 +100,7 @@ def stop_audio_stream():
     saved_clipboard = pyperclip.paste()
     pyperclip.copy(text)
     
-    with pyautogui.hold(['command']):
+    with pyautogui.hold([key_to_hold]):
         time.sleep(config.v_delay)
         pyautogui.press('v')
 
