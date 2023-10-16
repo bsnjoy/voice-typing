@@ -66,7 +66,7 @@ def transcribe_audio_to_text(fname):
 
 
 def check_keys_combination():
-    return all(k in keys_pressed for k in {keyboard.Key.ctrl, keyboard.Key.shift, keyboard.Key.alt, keyboard.KeyCode.from_char('j')})
+    return all(k in keys_pressed for k in config.hotkey_2)
 
 def callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
@@ -117,10 +117,10 @@ def start_audio_stream():
 def on_press(key):
     global processing_audio
 
-    if key in {keyboard.Key.ctrl, keyboard.Key.shift, keyboard.Key.alt, keyboard.KeyCode.from_char('j')}:
+    if key in config.hotkey_2:
         keys_pressed.add(key)
 
-    if not processing_audio and (check_keys_combination() or key == keyboard.Key.f12):
+    if not processing_audio and (check_keys_combination() or key == config.hotkey_1):
         start_audio_stream()
 
 def receive_last_audio_chunk_and_stop():
@@ -134,7 +134,7 @@ def on_release(key):
     if key in keys_pressed:
         keys_pressed.remove(key)
 
-    if processing_audio and (not check_keys_combination() or key == keyboard.Key.f12):
+    if processing_audio and (not check_keys_combination() or key == config.hotkey_1):
         receive_last_audio_chunk_and_stop()
 
 def listen_keyboard():
