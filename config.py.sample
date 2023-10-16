@@ -1,0 +1,8 @@
+# Use this command in shell to enumerate devices with microphone and their names:
+# python3 -c "import sounddevice as sd; devices = sd.query_devices(); print('\n'.join(f'{idx}: {device[\"name\"]}' for idx, device in enumerate(devices)))"
+fallback_mic = 'MacBook Air Microphone'
+preffered_mic = 'Studio Display Microphone'
+recordings_dir = 'recordings'
+transcribe_server = 'http://127.0.0.1:5000/transcribe'
+# if you see Just let a 'v' typed, instead of your dictation, then increase the delay.
+v_delay = 0.2

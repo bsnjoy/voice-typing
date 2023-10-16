@@ -1,0 +1,6 @@
+sounddevice
+pyautogui
+requests
+pynput
+wave
+pyperclip

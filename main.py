@@ -1,16 +1,14 @@
-#!python3
+#!/usr/bin/env python3
 
 # Before run allow Settings-Microphone and Accessibility for iTerm and VSCode
 # https://support.apple.com/en-us/102071
 import os
-#import sys
 import sounddevice as sd
 import pyautogui
 import requests
 from pynput import keyboard
 import threading
 from datetime import datetime
-#import subprocess
 import wave
 import queue
 import json
@@ -26,8 +24,6 @@ keys_pressed = set()
 processing_audio = False
 last_chunk = False
 audio_stream_stoped = False
-audio_data = []
-
 
 # Global declaration
 audio_stream = None
@@ -48,12 +44,11 @@ def select_mic():
     return mic
 
 def save_audio_to_file(data):
-    global dictations_dir
     # Store year/month/day in separate folders
-    dictations_dir = f"{config.dictations_dir}/{datetime.now().strftime('%Y/%m/%d')}"
-    if not os.path.exists(dictations_dir):
-        os.makedirs(dictations_dir)
-    filename = f"{dictations_dir}/dictation_{datetime.now().strftime('%Y%m%d-%H%M%S')}.wav"
+    recordings_dir = f"{config.recordings_dir}/{datetime.now().strftime('%Y/%m/%d')}"
+    if not os.path.exists(recordings_dir):
+        os.makedirs(recordings_dir)
+    filename = f"{recordings_dir}/record_{datetime.now().strftime('%Y%m%d-%H%M%S')}.wav"
     with wave.open(filename, 'wb') as wf:
         wf.setnchannels(1)
         wf.setsampwidth(2)  # 2 bytes because format is int16
@@ -85,8 +80,9 @@ def callback(indata, frames, time, status):
         last_chunk = True
 
 def stop_audio_stream():
-    global audio_data, audio_stream, audio_stream_stoped
+    global audio_stream, audio_stream_stoped
     audio_stream_stoped = True
+    audio_data = []
     while not audio_queue.empty():
         audio_data.append(audio_queue.get())
     filename = save_audio_to_file(audio_data)
@@ -98,12 +94,11 @@ def stop_audio_stream():
     pyperclip.copy(text)
     
     with pyautogui.hold(['command']):
-        time.sleep(0.2)
+        time.sleep(config.v_delay)
         pyautogui.press('v')
 
     pyperclip.copy(saved_clipboard)
 
-    audio_data = []
     audio_stream.stop()
     audio_stream.close()
 
