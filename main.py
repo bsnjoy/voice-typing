@@ -103,17 +103,20 @@ def stop_audio_stream():
     while not audio_queue.empty():
         audio_data.append(audio_queue.get())
     filename = save_audio_to_file(audio_data)
-    data = transcribe_audio_to_text(filename)
-    text = data['text']
-    language = data['language']
-    print(f"Language: {language} Got result: {text}")
 
     saved_clipboard = pyperclip.paste()
-    pyperclip.copy(text)
 
     with pyautogui.hold([key_to_hold]):
-        time.sleep(config.v_delay)
+        # instead of delay between press CMD(CTRL) and V, we use time needed to process transcribe_audio_to_text
+        data = transcribe_audio_to_text(filename)
+        text = data['text']
+        pyperclip.copy(text)
+        if config.v_delay > 0:
+            time.sleep(config.v_delay)
         pyautogui.press('v')
+    
+    language = data['language']
+    print(f"Language: {language} Got result: {text}")
 
     if saved_clipboard is not None:
         pyperclip.copy(saved_clipboard)
