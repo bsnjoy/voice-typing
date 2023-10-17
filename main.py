@@ -26,8 +26,6 @@ samplerate = 16000
 
 keys_pressed = set()
 processing_audio = False
-last_chunk = False
-audio_stream_stoped = False
 
 # Global declaration
 audio_stream = None
@@ -78,7 +76,6 @@ def transcribe_audio_to_text(fname):
     print(f"Transcribing {fname}...")
     with open(fname, 'rb') as f:
         response = requests.post(config.transcribe_server, files={'file': f})
-
     return json.loads(response.text)
 
 
@@ -88,19 +85,16 @@ def check_keys_combination():
 
 def callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
-    global audio_queue, processing_audio, last_chunk, audio_stream_stoped
+    global audio_queue
     print('callback initiated')
-
-    if not audio_stream_stoped:
-        audio_queue.put(bytes(indata))
-
-    if not processing_audio:
-        last_chunk = True
+    audio_queue.put(bytes(indata))
 
 
 def stop_audio_stream():
-    global audio_stream, audio_stream_stoped, key_to_hold
-    audio_stream_stoped = True
+    global audio_stream, key_to_hold, processing_audio, audio_queue
+    audio_stream.stop()
+    audio_stream.close()
+    processing_audio = False
     audio_data = []
     while not audio_queue.empty():
         audio_data.append(audio_queue.get())
@@ -123,18 +117,15 @@ def stop_audio_stream():
     if saved_clipboard is not None:
         pyperclip.copy(saved_clipboard)
 
-    audio_stream.stop()
-    audio_stream.close()
+ 
 
 
 def start_audio_stream():
-    global processing_audio, audio_stream, last_chunk, audio_stream_stoped
+    global processing_audio, audio_stream
     print('Started recording audio...')
     processing_audio = True
-    audio_stream_stoped = False
-    last_chunk = False
     selected_mic = select_mic()
-    audio_stream = sd.RawInputStream(samplerate=samplerate, blocksize=4000, device=selected_mic,
+    audio_stream = sd.RawInputStream(samplerate=samplerate, blocksize=1000, device=selected_mic,
                                      dtype="int16", channels=1, callback=callback)
     audio_stream.start()
 
@@ -149,13 +140,6 @@ def on_press(key):
         start_audio_stream()
 
 
-def receive_last_audio_chunk_and_stop():
-    global processing_audio
-    print('Stopped recording audio...')
-    # We don't stop immediately, we wait for the last chunk to be processed
-    processing_audio = False
-
-
 def on_release(key):
     global processing_audio, keys_pressed
 
@@ -163,7 +147,7 @@ def on_release(key):
         keys_pressed.remove(key)
 
     if processing_audio and (not check_keys_combination() or key == config.hotkey_1):
-        receive_last_audio_chunk_and_stop()
+        stop_audio_stream()
 
 
 def listen_keyboard():
@@ -175,8 +159,4 @@ if __name__ == '__main__':
     print("started")
     keyboard_thread = threading.Thread(target=listen_keyboard, daemon=True)
     keyboard_thread.start()
-
-    while keyboard_thread.is_alive():
-        if last_chunk and not audio_stream_stoped and not processing_audio:
-            stop_audio_stream()
-        pass  # Keep the script running
+    keyboard_thread.join()  # This will keep the main thread alive until keyboard_thread terminates.
