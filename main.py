@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # In Mac OS Before run allow Settings-Microphone and Accessibility for iTerm and VSCode
-# https://support.apple.com/en-us/102071
+# https://sup   port.apple.com/en-us/102071
 import os
 import sys
 import sounddevice as sd
@@ -41,21 +41,23 @@ else:
 def select_mic():
     """
     Returns the index of the desired microphone based on availability.
-    Prioritize config.preffered_mic, if not available, fallback to config.fallback_mic
+    Prioritize config.primary_mic_name, if not available, then use config.backup_mic_name if available.
+    If both not available, fallback to config.fallback_mic_index
     """
     devices = sd.query_devices()
 
     # return index, not name because on windows can be multiple devices with same name
-    fallback_device_ind = None
+    mic_index = config.fallback_mic_index
     for device in devices:
         print(device)
-        if device['name'] == config.preffered_mic:
-            return device["index"]
+        if device['name'] == config.primary_mic_name:
+            mic_index = device["index"]
+            break
 
-        if device['name'] == config.fallback_mic:
-            fallback_device_ind = device["index"]
+        if device['name'] == config.backup_mic_name:
+            mic_index = device["index"]
 
-    return fallback_device_ind
+    return mic_index
 
 
 def save_audio_to_file(data):
