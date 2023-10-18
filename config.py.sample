@@ -8,7 +8,7 @@ backup_mic_name = 'MacBook Air Microphone'
 recordings_dir = 'recordings'
 transcribe_server = 'http://127.0.0.1:5000/transcribe'
 # if you see Just let a 'v' typed, instead of your dictation, then increase the delay.
-v_delay = 0
+v_delay = 0.5
 # hotkeys to invoke dictation.
 hotkey_1 = keyboard.Key.f12
 # on windows must use ctrl and alt modifirers with _l or _r suffix, shift should be just shift or shift_r on mac os can use anything everything without suffix. But will work with suffix also

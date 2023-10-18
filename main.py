@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # In Mac OS Before run allow Settings-Microphone and Accessibility for iTerm and VSCode
-# https://sup   port.apple.com/en-us/102071
+# https://support.apple.com/en-us/102071
 import os
 import sys
 import sounddevice as sd
@@ -16,6 +16,7 @@ import json
 import pyperclip
 import time
 import config
+import subprocess
 
 # Disable the Fail-Safe, because we don't neet to stop a pyautogui script when mouse is moved to a corner of the screen
 pyautogui.FAILSAFE = False
@@ -89,6 +90,34 @@ def callback(indata, frames, time, status):
     print('callback initiated')
     audio_queue.put(bytes(indata))
 
+def paste(text):
+    if sys.platform == 'darwin':  # This checks if the OS is MacOS 
+        applescript = f"""
+    set saved_clipboard to the clipboard
+    set the clipboard to "{text}"
+    tell application "System Events"
+        set frontmostApp to name of the first application process whose frontmost is true
+        tell process frontmostApp
+            -- keystroke "v" using command down
+            click menu item "Paste" of menu 1 of menu bar item "Edit" of menu bar 1
+        end tell
+    end tell
+    delay 1
+    set the clipboard to saved_clipboard
+    """
+        print('Before paste')
+        subprocess.run(["osascript", "-e", applescript])
+        print('After paste inside')
+    else:
+        saved_clipboard = pyperclip.paste()
+        pyperclip.copy(text)
+        with pyautogui.hold([key_to_hold]):
+            if config.v_delay > 0:
+                time.sleep(config.v_delay)
+            pyautogui.press('v')
+        if saved_clipboard is not None:
+            pyperclip.copy(saved_clipboard)
+
 
 def stop_audio_stream():
     global audio_stream, key_to_hold, processing_audio, audio_queue
@@ -100,23 +129,14 @@ def stop_audio_stream():
         audio_data.append(audio_queue.get())
     filename = save_audio_to_file(audio_data)
 
-    saved_clipboard = pyperclip.paste()
-
-    with pyautogui.hold([key_to_hold]):
-        # instead of delay between press CMD(CTRL) and V, we use time needed to process transcribe_audio_to_text
-        data = transcribe_audio_to_text(filename)
-        text = data['text']
-        pyperclip.copy(text)
-        if config.v_delay > 0:
-            time.sleep(config.v_delay)
-        pyautogui.press('v')
+    data = transcribe_audio_to_text(filename)
+    text = data['text']
+ 
+    paste(text)
+    print('After paste')
     
     language = data['language']
     print(f"Language: {language} Got result: {text}")
-
-    if saved_clipboard is not None:
-        pyperclip.copy(saved_clipboard)
-
  
 
 
@@ -133,6 +153,13 @@ def start_audio_stream():
 def on_press(key):
     global processing_audio
 
+    try:
+        # If the key has a printable representation, display that
+        print('alphanumeric key {0} pressed'.format(key.char))
+    except AttributeError:
+        # If the key doesn't have a printable representation (like 'ctrl' or 'alt'), display its name
+        print('special key {0} pressed'.format(key))
+
     if key in config.hotkey_2:
         keys_pressed.add(key)
 
@@ -142,6 +169,8 @@ def on_press(key):
 
 def on_release(key):
     global processing_audio, keys_pressed
+
+    print('{0} released'.format(key))
 
     if key in keys_pressed:
         keys_pressed.remove(key)
