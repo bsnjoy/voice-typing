@@ -105,9 +105,7 @@ def paste(text):
     delay 1
     set the clipboard to saved_clipboard
     """
-        print('Before paste')
         subprocess.run(["osascript", "-e", applescript])
-        print('After paste inside')
     else:
         saved_clipboard = pyperclip.paste()
         pyperclip.copy(text)
@@ -131,14 +129,10 @@ def stop_audio_stream():
 
     data = transcribe_audio_to_text(filename)
     text = data['text']
- 
-    paste(text)
-    print('After paste')
-    
     language = data['language']
     print(f"Language: {language} Got result: {text}")
- 
 
+    paste(text)
 
 def start_audio_stream():
     global processing_audio, audio_stream
@@ -149,34 +143,32 @@ def start_audio_stream():
                                      dtype="int16", channels=1, callback=callback)
     audio_stream.start()
 
+def process_audio_thread():
+    global processing_audio
+    while processing_audio:
+        # Keep the thread alive while processing audio. This can be enhanced to process other tasks if needed.
+        time.sleep(0.1)
+    stop_audio_stream()
 
 def on_press(key):
     global processing_audio
-
-    try:
-        # If the key has a printable representation, display that
-        print('alphanumeric key {0} pressed'.format(key.char))
-    except AttributeError:
-        # If the key doesn't have a printable representation (like 'ctrl' or 'alt'), display its name
-        print('special key {0} pressed'.format(key))
 
     if key in config.hotkey_2:
         keys_pressed.add(key)
 
     if not processing_audio and (check_keys_combination() or key == config.hotkey_1):
         start_audio_stream()
+        threading.Thread(target=process_audio_thread, daemon=True).start()
 
 
 def on_release(key):
     global processing_audio, keys_pressed
 
-    print('{0} released'.format(key))
-
     if key in keys_pressed:
         keys_pressed.remove(key)
 
     if processing_audio and (not check_keys_combination() or key == config.hotkey_1):
-        stop_audio_stream()
+        processing_audio = False  # This will terminate the process_audio_thread.
 
 
 def listen_keyboard():
