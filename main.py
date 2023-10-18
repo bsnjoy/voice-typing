@@ -20,7 +20,7 @@ import subprocess
 
 # Disable the Fail-Safe, because we don't neet to stop a pyautogui script when mouse is moved to a corner of the screen
 pyautogui.FAILSAFE = False
-
+print(f'{[sys.executable] + sys.argv}')
 audio_queue = queue.Queue()
 
 samplerate = 16000
@@ -36,27 +36,30 @@ if sys.platform == 'darwin':  # This checks if the OS is MacOS
 else:
     key_to_hold = 'ctrl'
 
+# The sounddevice library internally caches the list of devices for performance reasons. However, it does not provide an explicit way to reset or refresh this cache through its public API.
+# One way to bypass the cached devices and force sounddevice to re-query the devices is to restart the Python process or script, but this may not be ideal in many scenarios.
+def get_selected_mic():
+    result = subprocess.run(["python3", "select_mic.py"], capture_output=True, text=True)
+    print(f'get_selected_mic: {result.stdout.strip()}')
+    return json.loads(result.stdout.strip())
 
-def select_mic():
-    """
-    Returns the index of the desired microphone based on availability.
-    Prioritize config.primary_mic_name, if not available, then use config.backup_mic_name if available.
-    If both not available, fallback to config.fallback_mic_index
-    """
-    devices = sd.query_devices()
+selected_mic = get_selected_mic()
 
-    # return index, not name because on windows can be multiple devices with same name
-    mic_index = config.fallback_mic_index
-    for device in devices:
-        print(device)
-        if device['name'] == config.primary_mic_name:
-            mic_index = device["index"]
-            break
+def restart_program():
+    print("Restarting app!!!!!")
+    subprocess.Popen([sys.executable] + sys.argv)
+    sys.exit()
 
-        if device['name'] == config.backup_mic_name:
-            mic_index = device["index"]
-
-    return mic_index
+def update_mic():
+    global selected_mic
+    while True:
+        new_mic = get_selected_mic()
+        if new_mic["index"] != selected_mic["index"] or new_mic["name"] != selected_mic["name"]:
+            print(f"Microphone changed to index: {new_mic['index']}, name: {new_mic['name']}")
+            selected_mic = new_mic
+            # There's no other way to clear SoundDevice library cache
+            restart_program()
+        time.sleep(5)  # wait for 5 seconds before checking again
 
 
 def save_audio_to_file(data):
@@ -87,7 +90,7 @@ def check_keys_combination():
 def callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
     global audio_queue
-    print('callback initiated')
+    # print('callback initiated')
     audio_queue.put(bytes(indata))
 
 def paste(text):
@@ -135,11 +138,10 @@ def stop_audio_stream():
     paste(text)
 
 def start_audio_stream():
-    global processing_audio, audio_stream
+    global processing_audio, audio_stream, selected_mic
     print('Started recording audio...')
     processing_audio = True
-    selected_mic = select_mic()
-    audio_stream = sd.RawInputStream(samplerate=samplerate, blocksize=1000, device=selected_mic,
+    audio_stream = sd.RawInputStream(samplerate=samplerate, blocksize=1000, device=selected_mic["index"],
                                      dtype="int16", channels=1, callback=callback)
     audio_stream.start()
 
@@ -178,6 +180,9 @@ def listen_keyboard():
 
 if __name__ == '__main__':
     print("started")
+    mic_update_thread = threading.Thread(target=update_mic, daemon=True)
+    mic_update_thread.start()
+
     keyboard_thread = threading.Thread(target=listen_keyboard, daemon=True)
     keyboard_thread.start()
     keyboard_thread.join()  # This will keep the main thread alive until keyboard_thread terminates.
