@@ -20,12 +20,16 @@ import subprocess
 
 # Disable the Fail-Safe, because we don't neet to stop a pyautogui script when mouse is moved to a corner of the screen
 pyautogui.FAILSAFE = False
+
 print(f'{[sys.executable] + sys.argv}')
+
 audio_queue = queue.Queue()
 
 samplerate = 16000
 
 keys_pressed = set()
+
+recording_audio = False
 processing_audio = False
 
 # Global declaration
@@ -51,14 +55,15 @@ def restart_program():
     sys.exit()
 
 def update_mic():
-    global selected_mic
+    global selected_mic, processing_audio
     while True:
-        new_mic = get_selected_mic()
-        if new_mic["index"] != selected_mic["index"] or new_mic["name"] != selected_mic["name"]:
-            print(f"Microphone changed to index: {new_mic['index']}, name: {new_mic['name']}")
-            selected_mic = new_mic
-            # There's no other way to clear SoundDevice library cache
-            restart_program()
+        if not processing_audio:  # Don't check microphone update while recording audio.
+            new_mic = get_selected_mic()
+            if new_mic["index"] != selected_mic["index"] or new_mic["name"] != selected_mic["name"]:
+                print(f"Microphone changed to index: {new_mic['index']}, name: {new_mic['name']}")
+                selected_mic = new_mic
+                # There's no other way to clear SoundDevice library cache
+                restart_program()
         time.sleep(5)  # wait for 5 seconds before checking again
 
 
@@ -94,6 +99,8 @@ def callback(indata, frames, time, status):
     audio_queue.put(bytes(indata))
 
 def paste(text):
+    global key_to_hold
+    
     if sys.platform == 'darwin':  # This checks if the OS is MacOS 
         applescript = f"""
     set saved_clipboard to the clipboard
@@ -121,10 +128,9 @@ def paste(text):
 
 
 def stop_audio_stream():
-    global audio_stream, key_to_hold, processing_audio, audio_queue
+    global audio_stream, audio_queue, processing_audio
     audio_stream.stop()
     audio_stream.close()
-    processing_audio = False
     audio_data = []
     while not audio_queue.empty():
         audio_data.append(audio_queue.get())
@@ -136,41 +142,41 @@ def stop_audio_stream():
     print(f"Language: {language} Got result: {text}")
 
     paste(text)
+    processing_audio = False
 
 def start_audio_stream():
-    global processing_audio, audio_stream, selected_mic
-    print('Started recording audio...')
+    global recording_audio, audio_stream, selected_mic, stream_lock, processing_audio
     processing_audio = True
+    recording_audio = True
+    print('Started recording audio...')
     audio_stream = sd.RawInputStream(samplerate=samplerate, blocksize=1000, device=selected_mic["index"],
-                                     dtype="int16", channels=1, callback=callback)
+                                    dtype="int16", channels=1, callback=callback)
     audio_stream.start()
-
-def process_audio_thread():
-    global processing_audio
-    while processing_audio:
-        # Keep the thread alive while processing audio. This can be enhanced to process other tasks if needed.
+    while recording_audio:
+# Keep the thread alive while processing audio. This can be enhanced to process other tasks if needed.
         time.sleep(0.1)
     stop_audio_stream()
 
-def on_press(key):
-    global processing_audio
 
+def on_press(key):
+    global keys_pressed, processing_audio
     if key in config.hotkey_2:
         keys_pressed.add(key)
 
-    if not processing_audio and (check_keys_combination() or key == config.hotkey_1):
-        start_audio_stream()
-        threading.Thread(target=process_audio_thread, daemon=True).start()
+    if check_keys_combination() or key == config.hotkey_1:
+        if not processing_audio:
+            threading.Thread(target=start_audio_stream, daemon=True).start()
+
 
 
 def on_release(key):
-    global processing_audio, keys_pressed
+    global recording_audio, keys_pressed
 
     if key in keys_pressed:
         keys_pressed.remove(key)
 
-    if processing_audio and (not check_keys_combination() or key == config.hotkey_1):
-        processing_audio = False  # This will terminate the process_audio_thread.
+    if recording_audio and (not check_keys_combination() or key == config.hotkey_1):
+        recording_audio = False  # This will terminate the process_audio_thread.
 
 
 def listen_keyboard():
