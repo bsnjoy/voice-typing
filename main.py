@@ -25,6 +25,8 @@ print(f'{[sys.executable] + sys.argv}')
 
 audio_queue = queue.Queue()
 
+lock = threading.Lock()
+
 samplerate = 16000
 
 keys_pressed = set()
@@ -44,7 +46,7 @@ else:
 # One way to bypass the cached devices and force sounddevice to re-query the devices is to restart the Python process or script, but this may not be ideal in many scenarios.
 def get_selected_mic():
     result = subprocess.run(["python3", "select_mic.py"], capture_output=True, text=True)
-    print(f'get_selected_mic: {result.stdout.strip()}')
+    #print(f'get_selected_mic: {result.stdout.strip()}')
     return json.loads(result.stdout.strip())
 
 selected_mic = get_selected_mic()
@@ -145,27 +147,28 @@ def stop_audio_stream():
     processing_audio = False
 
 def start_audio_stream():
-    global recording_audio, audio_stream, selected_mic, stream_lock, processing_audio
-    processing_audio = True
+    global recording_audio, audio_stream, selected_mic
     recording_audio = True
     print('Started recording audio...')
     audio_stream = sd.RawInputStream(samplerate=samplerate, blocksize=1000, device=selected_mic["index"],
                                     dtype="int16", channels=1, callback=callback)
     audio_stream.start()
     while recording_audio:
-# Keep the thread alive while processing audio. This can be enhanced to process other tasks if needed.
         time.sleep(0.1)
     stop_audio_stream()
 
 
 def on_press(key):
-    global keys_pressed, processing_audio
+    global keys_pressed, processing_audio, lock
     if key in config.hotkey_2:
         keys_pressed.add(key)
 
     if check_keys_combination() or key == config.hotkey_1:
-        if not processing_audio:
-            threading.Thread(target=start_audio_stream, daemon=True).start()
+        if lock.acquire(blocking=False): # This will prevent multiple threads from starting at the same time.
+            if not processing_audio:
+                processing_audio = True
+                threading.Thread(target=start_audio_stream, daemon=True).start()
+            lock.release()
 
 
 
