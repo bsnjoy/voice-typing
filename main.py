@@ -21,7 +21,13 @@ import subprocess
 # Disable the Fail-Safe, because we don't neet to stop a pyautogui script when mouse is moved to a corner of the screen
 pyautogui.FAILSAFE = False
 
-print(f'{[sys.executable] + sys.argv}')
+def printt(text):
+    current_time = datetime.now().strftime("%H:%M:%S.%f")[:-3]  # Format current time
+    thread_id = threading.get_ident()  # Get current thread id
+    print(f"{current_time} [Thread-{thread_id}] {text}")
+
+
+printt(f'{[sys.executable] + sys.argv}')
 
 audio_queue = queue.Queue()
 
@@ -46,13 +52,13 @@ else:
 # One way to bypass the cached devices and force sounddevice to re-query the devices is to restart the Python process or script, but this may not be ideal in many scenarios.
 def get_selected_mic():
     result = subprocess.run(["python3", "select_mic.py"], capture_output=True, text=True)
-    #print(f'get_selected_mic: {result.stdout.strip()}')
+    #printt(f'get_selected_mic: {result.stdout.strip()}')
     return json.loads(result.stdout.strip())
 
 selected_mic = get_selected_mic()
 
 def restart_program():
-    print("Restarting app!!!!!")
+    printt("Restarting app!!!!!")
     subprocess.Popen([sys.executable] + sys.argv)
     sys.exit()
 
@@ -62,7 +68,7 @@ def update_mic():
         if not processing_audio:  # Don't check microphone update while recording audio.
             new_mic = get_selected_mic()
             if new_mic["index"] != selected_mic["index"] or new_mic["name"] != selected_mic["name"]:
-                print(f"Microphone changed to index: {new_mic['index']}, name: {new_mic['name']}")
+                printt(f"Microphone changed to index: {new_mic['index']}, name: {new_mic['name']}")
                 selected_mic = new_mic
                 # There's no other way to clear SoundDevice library cache
                 restart_program()
@@ -84,7 +90,7 @@ def save_audio_to_file(data):
 
 
 def transcribe_audio_to_text(fname):
-    print(f"Transcribing {fname}...")
+    printt(f"Transcribing {fname}...")
     with open(fname, 'rb') as f:
         response = requests.post(config.transcribe_server, files={'file': f})
     return json.loads(response.text)
@@ -97,15 +103,15 @@ def check_keys_combination():
 def callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
     global audio_queue
-    # print('callback initiated')
+    # printt('callback initiated')
     audio_queue.put(bytes(indata))
 
 def paste(text):
     global key_to_hold
+    saved_clipboard = pyperclip.paste()
     
     if sys.platform == 'darwin':  # This checks if the OS is MacOS 
         applescript = f"""
-    set saved_clipboard to the clipboard
     set the clipboard to "{text}"
     tell application "System Events"
         set frontmostApp to name of the first application process whose frontmost is true
@@ -114,19 +120,18 @@ def paste(text):
             click menu item "Paste" of menu 1 of menu bar item "Edit" of menu bar 1
         end tell
     end tell
-    delay 1
-    set the clipboard to saved_clipboard
     """
         subprocess.run(["osascript", "-e", applescript])
+        time.sleep(config.restore_clipborad_delay)
     else:
-        saved_clipboard = pyperclip.paste()
         pyperclip.copy(text)
         with pyautogui.hold([key_to_hold]):
             if config.v_delay > 0:
                 time.sleep(config.v_delay)
             pyautogui.press('v')
-        if saved_clipboard is not None:
-            pyperclip.copy(saved_clipboard)
+
+    if saved_clipboard is not None:
+        pyperclip.copy(saved_clipboard)
 
 
 def stop_audio_stream():
@@ -141,15 +146,15 @@ def stop_audio_stream():
     data = transcribe_audio_to_text(filename)
     text = data['text']
     language = data['language']
-    print(f"Language: {language} Got result: {text}")
-
+    printt(f"Language: {language} Got result: {text}")
     paste(text)
+    printt('Finished processing audio...')
     processing_audio = False
 
 def start_audio_stream():
     global recording_audio, audio_stream, selected_mic
     recording_audio = True
-    print('Started recording audio...')
+    printt('Started recording audio...')
     audio_stream = sd.RawInputStream(samplerate=samplerate, blocksize=1000, device=selected_mic["index"],
                                     dtype="int16", channels=1, callback=callback)
     audio_stream.start()
@@ -188,7 +193,7 @@ def listen_keyboard():
 
 
 if __name__ == '__main__':
-    print("started")
+    printt("started")
     mic_update_thread = threading.Thread(target=update_mic, daemon=True)
     mic_update_thread.start()
 

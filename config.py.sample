@@ -1,15 +1,18 @@
 from pynput import keyboard
 
+# hotkeys to invoke dictation.
+hotkey_1 = keyboard.Key.f12
+# on windows must use ctrl and alt modifirers with _l or _r suffix, shift should be just shift or shift_r on mac os can use anything everything without suffix. But will work with suffix also
+hotkey_2 = {keyboard.Key.ctrl_l, keyboard.Key.shift, keyboard.Key.alt_l, keyboard.KeyCode.from_char('j')}
+
 fallback_mic_index = 0
 # Use this command in shell to enumerate devices and their names:
 # python3 -c "import sounddevice as sd; devices = sd.query_devices(); print('\n'.join(f'{idx}: {device[\"name\"]}' for idx, device in enumerate(devices)))"
 primary_mic_name = 'Studio Display Microphone'
 backup_mic_name = 'MacBook Air Microphone'
+
 recordings_dir = 'recordings'
 transcribe_server = 'http://127.0.0.1:5000/transcribe'
-# if you see Just let a 'v' typed, instead of your dictation, then increase the delay.
-v_delay = 0.5
-# hotkeys to invoke dictation.
-hotkey_1 = keyboard.Key.f12
-# on windows must use ctrl and alt modifirers with _l or _r suffix, shift should be just shift or shift_r on mac os can use anything everything without suffix. But will work with suffix also
-hotkey_2 = {keyboard.Key.ctrl_l, keyboard.Key.shift, keyboard.Key.alt_l, keyboard.KeyCode.from_char('j')}
+
+restore_clipborad_delay = 1 #    delay before restoring clipboard. Without delay Pasting happening slower, then restoring clipboard used for MacOs
+v_delay = 0.5    # if you see Just let a 'v' typed, instead of your dictation, then increase the delay. Used for Windows
