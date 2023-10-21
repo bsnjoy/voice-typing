@@ -21,6 +21,10 @@ import subprocess
 # Disable the Fail-Safe, because we don't neet to stop a pyautogui script when mouse is moved to a corner of the screen
 pyautogui.FAILSAFE = False
 
+stop_update_mic_thread = False
+keyboard_thread = None
+mic_update_thread = None
+
 def printt(text):
     current_time = datetime.now().strftime("%H:%M:%S.%f")[:-3]  # Format current time
     thread_id = threading.get_ident()  # Get current thread id
@@ -55,24 +59,32 @@ def get_selected_mic():
     #printt(f'get_selected_mic: {result.stdout.strip()}')
     return json.loads(result.stdout.strip())
 
-selected_mic = get_selected_mic()
+selected_mic = None
 
 def restart_program():
+    global stop_update_mic_thread, keyboard_thread
     printt("Restarting app!!!!!")
+    stop_update_mic_thread = True
+    keyboard.Listener.stop(keyboard_thread)
+    printt("keyboard_thread.stop() finish!!!!!")
     subprocess.Popen([sys.executable] + sys.argv)
     sys.exit()
 
 def update_mic():
-    global selected_mic, processing_audio
-    while True:
+    global selected_mic, processing_audio, stop_update_mic_thread
+    while not stop_update_mic_thread:
         if not processing_audio:  # Don't check microphone update while recording audio.
             new_mic = get_selected_mic()
-            if new_mic["index"] != selected_mic["index"] or new_mic["name"] != selected_mic["name"]:
+            if selected_mic is None:
+                selected_mic = new_mic
+                printt(f"Microphone selected: {selected_mic}")
+            elif new_mic["index"] != selected_mic["index"] or new_mic["name"] != selected_mic["name"]:
                 printt(f"Microphone changed to index: {new_mic['index']}, name: {new_mic['name']}")
                 selected_mic = new_mic
                 # There's no other way to clear SoundDevice library cache
                 restart_program()
         time.sleep(5)  # wait for 5 seconds before checking again
+        #printt("update_mic loop")
 
 
 def save_audio_to_file(data):
@@ -176,7 +188,7 @@ def on_press(key):
         if lock.acquire(blocking=False): # This will prevent multiple threads from starting at the same time.
             if not processing_audio:
                 processing_audio = True
-                threading.Thread(target=start_audio_stream, daemon=True).start()
+                threading.Thread(target=start_audio_stream).start()
             lock.release()
 
 
@@ -190,17 +202,19 @@ def on_release(key):
     if recording_audio and (not check_keys_combination() or key == config.hotkey_1):
         recording_audio = False  # This will terminate the process_audio_thread.
 
-
-def listen_keyboard():
-    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        listener.join()
-
-
 if __name__ == '__main__':
     printt("started")
-    mic_update_thread = threading.Thread(target=update_mic, daemon=True)
+    mic_update_thread = threading.Thread(target=update_mic, daemon=None)
     mic_update_thread.start()
 
-    keyboard_thread = threading.Thread(target=listen_keyboard, daemon=True)
+    keyboard_thread = keyboard.Listener(on_press=on_press, on_release=on_release)
     keyboard_thread.start()
-    keyboard_thread.join()  # This will keep the main thread alive until keyboard_thread terminates.
+    try:
+        keyboard_thread.join()
+    except KeyboardInterrupt:
+        print("Program was interrupted by the user. Wait 5 seconds to finish all threads...")
+    printt("main - keyboard_thread.join() finish!!!!!")
+
+    stop_update_mic_thread = True
+    mic_update_thread.join()
+    printt("main - mic_update_thread.join() finish!!!!!")
