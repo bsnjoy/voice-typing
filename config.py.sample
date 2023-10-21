@@ -1,5 +1,11 @@
 from pynput import keyboard
 
+# substitutions for dictation. For example, if detected "...", it will be replaced with space " "
+substitutions = {
+    "...": " ",
+    " Some text wrong detected": " Needed text",
+}
+
 # hotkeys to invoke dictation.
 hotkey_1 = keyboard.Key.f12
 # on windows must use ctrl and alt modifirers with _l or _r suffix, shift should be just shift or shift_r on mac os can use anything everything without suffix. But will work with suffix also

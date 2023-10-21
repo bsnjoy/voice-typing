@@ -147,6 +147,10 @@ def stop_audio_stream():
     text = data['text']
     language = data['language']
     printt(f"Language: {language} Got result: {text}")
+    # replace substitutions
+    for old, new in config.substitutions.items():
+        text = text.replace(old, new)
+    printt(f"After substitutionst: {text}")
     paste(text)
     printt('Finished processing audio...')
     processing_audio = False
