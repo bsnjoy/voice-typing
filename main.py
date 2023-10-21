@@ -13,7 +13,7 @@ from datetime import datetime
 import wave
 import queue
 import json
-import pyperclip
+import pyclip
 import time
 import config
 import subprocess
@@ -108,7 +108,7 @@ def callback(indata, frames, time, status):
 
 def paste(text):
     global key_to_hold
-    saved_clipboard = pyperclip.paste()
+    saved_clipboard = pyclip.paste()
     
     if sys.platform == 'darwin':  # This checks if the OS is MacOS 
         applescript = f"""
@@ -124,14 +124,14 @@ def paste(text):
         subprocess.run(["osascript", "-e", applescript])
         time.sleep(config.restore_clipborad_delay)
     else:
-        pyperclip.copy(text)
+        pyclip.copy(text)
         with pyautogui.hold([key_to_hold]):
             if config.v_delay > 0:
                 time.sleep(config.v_delay)
             pyautogui.press('v')
 
     if saved_clipboard is not None:
-        pyperclip.copy(saved_clipboard)
+        pyclip.copy(saved_clipboard)
 
 
 def stop_audio_stream():

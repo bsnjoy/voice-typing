@@ -21,6 +21,9 @@ python3 list_devices.py
 # edit config using your preferred editor:
 vim config.py
 
+# only on linux needed to Pyperclip module works:
+sudo apt-get install xclip
+
 # Start application
 python3 main.py
 ```
