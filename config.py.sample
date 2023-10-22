@@ -14,8 +14,7 @@ hotkey_2 = {keyboard.Key.ctrl_l, keyboard.Key.shift, keyboard.Key.alt_l, keyboar
 fallback_mic_index = 0
 # Use this command in shell to enumerate devices and their names:
 # python3 -c "import sounddevice as sd; devices = sd.query_devices(); print('\n'.join(f'{idx}: {device[\"name\"]}' for idx, device in enumerate(devices)))"
-primary_mic_name = 'Studio Display Microphone'
-backup_mic_name = 'MacBook Air Microphone'
+priority_mic_names = ['Studio Display Microphone', 'MacBook Air Microphone']
 
 recordings_dir = 'recordings'
 transcribe_server = 'http://127.0.0.1:5000/transcribe'
