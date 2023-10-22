@@ -56,8 +56,12 @@ else:
 # One way to bypass the cached devices and force sounddevice to re-query the devices is to restart the Python process or script, but this may not be ideal in many scenarios.
 def get_selected_mic():
     result = subprocess.run(["python3", "select_mic.py"], capture_output=True, text=True)
-    #printt(f'get_selected_mic: {result.stdout.strip()}')
-    return json.loads(result.stdout.strip())
+    if result.returncode != 0:
+        printt(f'Error getting selected microphone. May be Ctrl+C pressed. Wait 5 seconds to finish all threads...')
+        return {"index": config.fallback_mic_index, "name": "Default"}
+    result_stdout = result.stdout.strip()
+    json_data = json.loads(result_stdout)
+    return json_data
 
 selected_mic = None
 
@@ -203,7 +207,7 @@ def on_release(key):
         recording_audio = False  # This will terminate the process_audio_thread.
 
 if __name__ == '__main__':
-    printt("started")
+    printt("Started main. Press Ctrl+C to exit.")
     mic_update_thread = threading.Thread(target=update_mic, daemon=None)
     mic_update_thread.start()
 
