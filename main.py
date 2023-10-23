@@ -30,7 +30,6 @@ def printt(text):
     thread_id = threading.get_ident()  # Get current thread id
     print(f"{current_time} [Thread-{thread_id}] {text}")
 
-
 printt(f'{[sys.executable] + sys.argv}')
 
 audio_queue = queue.Queue()
@@ -55,7 +54,7 @@ else:
 # The sounddevice library internally caches the list of devices for performance reasons. However, it does not provide an explicit way to reset or refresh this cache through its public API.
 # One way to bypass the cached devices and force sounddevice to re-query the devices is to restart the Python process or script, but this may not be ideal in many scenarios.
 def get_selected_mic():
-    result = subprocess.run(["python3", "select_mic.py"], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, "select_mic.py"], capture_output=True, text=True)
     if result.returncode != 0:
         printt(f'Error getting selected microphone. May be Ctrl+C pressed. Wait 5 seconds to finish all threads...')
         return {"index": config.fallback_mic_index, "name": "Default"}

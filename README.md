@@ -22,9 +22,7 @@ cd voice-typing
 python3 -m pip install -r requirements.txt
 cp config.py.sample config.py
 
-# Print devices with microphone and their names to use in config file:
-python3 -c "import sounddevice as sd; devices = sd.query_devices(); print('\n'.join(f'{idx}: {device[\"name\"]}' for idx, device in enumerate(devices)))"
-# or 
+# Print devices with microphone and their names to use in config file (only need for custom microphones):
 python3 list_devices.py
 
 # edit config using your preferred editor:
