@@ -145,10 +145,9 @@ def paste(text):
         time.sleep(config.restore_clipborad_delay)
     else:
         pyclip.copy(text)
-        with pyautogui.hold([key_to_hold]):
-            if config.v_delay > 0:
-                time.sleep(config.v_delay)
-            pyautogui.hotkey('ctrl', 'v')
+        if config.v_delay > 0:
+            time.sleep(config.v_delay)
+        pyautogui.hotkey('ctrl', 'v')
 
     if saved_clipboard is not None:
         pyclip.copy(saved_clipboard)
