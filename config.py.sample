@@ -6,10 +6,15 @@ substitutions = {
     " Some text wrong detected": " Needed text",
 }
 
-# hotkeys to invoke dictation.
-hotkey_1 = keyboard.Key.f12
+# hotkeys to invoke dictation (Just press right Command).
+hotkey_1 = keyboard.Key.cmd_r
+# Uncomment to invoke dictation by right Option:
+# hotkey_1 = keyboard.Key.alt_r
+# Uncomment to invoke dictation by F12:
+# hotkey_1 = keyboard.Key.f12
 # on windows must use ctrl and alt modifirers with _l or _r suffix, shift should be just shift or shift_r on mac os can use anything everything without suffix. But will work with suffix also
 hotkey_2 = {keyboard.Key.ctrl_l, keyboard.Key.shift, keyboard.Key.alt_l, keyboard.KeyCode.from_char('j')}
+
 
 fallback_mic_index = 0
 # Use this command in shell to enumerate devices and their names to add to priority list:
