@@ -132,14 +132,21 @@ def paste(text):
 
     if sys.platform == 'darwin':  # This checks if the OS is MacOS
         applescript = f"""
-    set the clipboard to "{text}"
-    tell application "System Events"
-        set frontmostApp to name of the first application process whose frontmost is true
-        tell process frontmostApp
-            -- keystroke "v" using command down
-            click menu item "Paste" of menu 1 of menu bar item "Edit" of menu bar 1
-        end tell
+set the clipboard to "{text}"
+tell application "System Events"
+    set frontmostApp to name of the first application process whose frontmost is true
+    tell process frontmostApp
+        try
+            click menu item "Paste1" of menu 1 of menu bar item "Edit" of menu bar 1
+        on error
+            try
+                click menu item "{config.mac_menu_edit}" of menu 1 of menu bar item "{config.mac_menu_paste}" of menu bar 1
+            on error errorMessage
+                display dialog "Failed to paste text: " & errorMessage
+            end try
+        end try
     end tell
+end tell
     """
         subprocess.run(["osascript", "-e", applescript])
         time.sleep(config.restore_clipborad_delay)
