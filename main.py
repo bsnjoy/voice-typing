@@ -137,10 +137,10 @@ tell application "System Events"
     set frontmostApp to name of the first application process whose frontmost is true
     tell process frontmostApp
         try
-            click menu item "Paste1" of menu 1 of menu bar item "Edit" of menu bar 1
+            click menu item "Paste" of menu 1 of menu bar item "Edit" of menu bar 1
         on error
             try
-                click menu item "{config.mac_menu_edit}" of menu 1 of menu bar item "{config.mac_menu_paste}" of menu bar 1
+                click menu item "{config.mac_menu_paste}" of menu 1 of menu bar item "{config.mac_menu_edit}" of menu bar 1
             on error errorMessage
                 display dialog "Failed to paste text: " & errorMessage
             end try
