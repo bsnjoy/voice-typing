@@ -25,11 +25,15 @@ stop_update_mic_thread = False
 keyboard_thread = None
 mic_update_thread = None
 
+# Convert the list of lists to an AppleScript list of lists format
+mac_menu_as = '{' + ', '.join(['{' + ', '.join(['"' + str(item[key]) + '"' for key in ['edit', 'paste']]) + '}' for item in config.mac_menu]) + '}'
+
 def printt(text):
     current_time = datetime.now().strftime("%H:%M:%S.%f")[:-3]  # Format current time
     thread_id = threading.get_ident()  # Get current thread id
     print(f"{current_time} [Thread-{thread_id}] {text}")
 
+printt(f"{mac_menu_as}")
 printt(f'{[sys.executable] + sys.argv}')
 
 audio_queue = queue.Queue()
@@ -129,26 +133,43 @@ def paste(text):
         saved_clipboard = pyclip.paste()
     except:
         saved_clipboard = None
-
+# Try to paste using AppleScript. If it fails, use pyautogui. AppleScript by clicking menu Edit->Paste is more reliable, then presing Cmd+V
     if sys.platform == 'darwin':  # This checks if the OS is MacOS
         applescript = f"""
 set the clipboard to "{text}"
 tell application "System Events"
     set frontmostApp to name of the first application process whose frontmost is true
     tell process frontmostApp
-        try
-            click menu item "Paste" of menu 1 of menu bar item "Edit" of menu bar 1
-        on error
+        set menuItems to {mac_menu_as}
+        set success to false
+        repeat with menuItem in menuItems
             try
-                click menu item "{config.mac_menu_paste}" of menu 1 of menu bar item "{config.mac_menu_edit}" of menu bar 1
-            on error errorMessage
-                display dialog "Failed to paste text: " & errorMessage
+                click menu item (item 2 of menuItem) of menu 1 of menu bar item (item 1 of menuItem) of menu bar 1
+                set success to true
+                exit repeat
+            on error
+                -- continue to next iteration
             end try
-        end try
+        end repeat
+        if not success then
+            return "fail"
+        else
+            return "success"
+        end if
     end tell
 end tell
-    """
-        subprocess.run(["osascript", "-e", applescript])
+"""
+        result = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True)
+        print(result.stdout)
+        # We don't use AppleScript to Paste ```keystroke "v" using {{command down}}``` because it's only working in english layout
+        if result.stdout.strip() == 'fail':
+            printt('AppleScript failed to click menu Paste. Trying pyautogui Cmd+V')
+            pyclip.copy(text)
+            if config.v_delay > 0:
+                time.sleep(config.v_delay)
+            with pyautogui.hold(['command']):
+                time.sleep(1)
+                pyautogui.press('v')
         time.sleep(config.restore_clipborad_delay)
     else:
         pyclip.copy(text)

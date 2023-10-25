@@ -22,11 +22,14 @@ fallback_mic_index = 0
 priority_mic_names = ['Studio Display Microphone', 'MacBook Air Microphone']
 
 # localization menu support for MacOs
-mac_menu_edit = 'Правка'
-mac_menu_paste = 'Вставить'
+mac_menu = [
+    {'edit': 'Edit', 'paste': 'Paste'},
+    {'edit': 'Правка', 'paste': 'Вставить'},
+    {'edit': 'Изменить', 'paste': 'Вставить'},
+]
 
 recordings_dir = 'recordings'
-transcribe_server = 'http://127.0.0.1:5000/transcribe'
+transcribe_server = 'http://183.89.239.83:5000/transcribe'
 
 restore_clipborad_delay = 1 #    delay before restoring clipboard. Without delay Pasting happening slower, then restoring clipboard used for MacOs
 v_delay = 0.5    # if you see Just let a 'v' typed, instead of your dictation, then increase the delay. Used for Windows
