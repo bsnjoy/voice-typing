@@ -29,7 +29,7 @@ mac_menu = [
 ]
 
 recordings_dir = 'recordings'
-transcribe_server = 'http://183.89.239.83:5000/transcribe'
+transcribe_server = 'http://demo.voicehotkey.com:5000/transcribe'
 
 restore_clipborad_delay = 1 #    delay before restoring clipboard. Without delay Pasting happening slower, then restoring clipboard used for MacOs
 v_delay = 0.5    # if you see Just let a 'v' typed, instead of your dictation, then increase the delay. Used for Windows
