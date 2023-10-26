@@ -164,7 +164,7 @@ tell application "System Events"
 end tell
 """
         result = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True)
-        print(result.stdout)
+        printt(f"AppleScript {result.stdout.strip()}")
         # We don't use AppleScript to Paste ```keystroke "v" using {{command down}}``` because it's only working in english layout
         if result.stdout.strip() == 'fail':
             printt('AppleScript failed to click menu Paste. Trying pyautogui Cmd+V')
