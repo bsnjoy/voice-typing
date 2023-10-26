@@ -1,9 +1,20 @@
 from pynput import keyboard
 
-# substitutions for dictation. For example, if detected "...", it will be replaced with space " "
-substitutions = {
+# Substitutions for dictation. For example, if detected "...", it will be replaced with space " "
+# Case-sensitive substitutions. Try use this ones if possible, they are much more faster then case-insensitive.
+substitutions_case_sensitive = {
     "...": " ",
-    " Some text wrong detected": " Needed text",
+    "Meet Journey": "MidJourney",
+}
+
+# Case-insensitive substitutions
+substitutions_case_insensitive = {
+    "mid-journey": "MidJourney",
+}
+
+# Regular expression substitutions
+substitutions_regex = {
+    r'\.\s*$': '',  # remove the dot at the end of a sentence. Delete this line if you want to keep the dot.
 }
 
 # hotkeys to invoke dictation (Just press right Command).

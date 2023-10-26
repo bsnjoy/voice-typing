@@ -17,6 +17,7 @@ import pyclip
 import time
 import config
 import subprocess
+import re
 
 # Disable the Fail-Safe, because we don't neet to stop a pyautogui script when mouse is moved to a corner of the screen
 pyautogui.FAILSAFE = False
@@ -35,6 +36,9 @@ def printt(text):
 
 printt(f"{mac_menu_as}")
 printt(f'{[sys.executable] + sys.argv}')
+
+# Compile the regex case-insensitive patterns
+substitutions_case_insensitive = {re.compile(pattern, re.IGNORECASE): replacement for pattern, replacement in config.substitutions_case_insensitive.items()}
 
 audio_queue = queue.Queue()
 
@@ -194,9 +198,19 @@ def stop_audio_stream():
     text = data['text']
     language = data['language']
     printt(f"Language: {language} Got result: {text}")
-    # replace substitutions
-    for old, new in config.substitutions.items():
+
+    # Apply case-sensitive substitutions
+    for old, new in config.substitutions_case_sensitive.items():
         text = text.replace(old, new)
+
+    # Apply case-insensitive substitutions
+    for pattern, replacement in substitutions_case_insensitive.items():
+        text = pattern.sub(replacement, text)
+
+    # Apply regular expression substitutions
+    for pattern, replacement in config.substitutions_regex.items():
+        text = re.sub(pattern, replacement, text)
+
     printt(f"After substitutionst: {text}")
     paste(text)
     printt('Finished processing audio...')
