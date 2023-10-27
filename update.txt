@@ -1,0 +1,27 @@
+********************************************************************************
+** 26.10.2023
+********************************************************************************
+Update (more complex substitutions, including case-insensitive and regular expressions, have been added). In the example below, the dot at the end of the application will be removed. If you don't need this, comment it out. To update, in config.py delete the variable substitutions. Instead, add the code below:
+
+# Substitutions for dictation. For example, if detected "...", it will be replaced with space " "
+# Case-sensitive substitutions. Try use this ones if possible, they are much more faster then case-insensitive.
+substitutions_case_sensitive = {
+    "...": " ",
+    "Meet Journey": "MidJourney",
+}
+
+# Case-insensitive substitutions
+substitutions_case_insensitive = {
+    "mid-journey": "MidJourney",
+}
+
+# Regular expression substitutions
+substitutions_regex = {
+    r'\.\s*$': '',  # remove the dot at the end of a sentence. Delete this line if you want to keep the dot.
+}
+
+After editing config
+1) Stop application: Ctrl + C
+2) git pull
+3) Start application:
+./start.sh
