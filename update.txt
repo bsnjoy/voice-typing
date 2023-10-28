@@ -1,4 +1,14 @@
 ********************************************************************************
+** 28.10.2023
+********************************************************************************
+Now main script name is voice-typing.py
+To update:
+1) Stop application: Ctrl + C
+2) git pull
+3) Start application:
+./start.sh
+
+********************************************************************************
 ** 26.10.2023
 ********************************************************************************
 Update (more complex substitutions, including case-insensitive and regular expressions, have been added). In the example below, the dot at the end of the application will be removed. If you don't need this, comment it out. To update, in config.py delete the variable substitutions. Instead, add the code below:
