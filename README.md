@@ -28,7 +28,7 @@ python3 list_devices.py
 # edit config using your preferred editor:
 vim config.py
 
-# Start application (It alse restarts the app if it was running before)
+# Start application (It also restarts the app if it was running before)
 ./start.sh
 
 ```
@@ -61,3 +61,13 @@ You need to approve Terminal app in all 4 sections:
  
 Example of approving Terminal app in Accessibility section:  
 ![You need to approve Terminal app in all 4 sections](img/privacy_security_accessibility.jpeg)
+
+
+## Update application
+```
+# Stop appincation using Ctrl+C
+git pull
+# Read in update.txt for possible updates needed to be made for config.py
+# Start the application:
+./start.sh
+```
