@@ -57,7 +57,7 @@ In Mac OS after running you will need to allow your application to monitor key s
 
 ### Screenshots for options above
 You need to approve Terminal app in all 4 sections: 
-[!You need to approve Terminal app in all 4 sections](img/privacy_security_all.jpeg)
+![You need to approve Terminal app in all 4 sections](img/privacy_security_all.jpeg)
  
 Example of approving Terminal app in Accessibility section:  
-[!You need to approve Terminal app in all 4 sections](img/privacy_security_accessibility.jpeg)
+![You need to approve Terminal app in all 4 sections](img/privacy_security_accessibility.jpeg)
