@@ -26,6 +26,8 @@ stop_update_mic_thread = False
 keyboard_thread = None
 mic_update_thread = None
 
+transcribe_server_url = f"{config.transcribe_server}?token={config.token}&languages={config.languages}"
+
 # Convert the list of lists to an AppleScript list of lists format
 mac_menu_as = '{' + ', '.join(['{' + ', '.join(['"' + str(item[key]) + '"' for key in ['edit', 'paste']]) + '}' for item in config.mac_menu]) + '}'
 
@@ -36,6 +38,7 @@ def printt(text):
 
 printt(f"{mac_menu_as}")
 printt(f'{[sys.executable] + sys.argv}')
+printt(f'Transcribe server: {transcribe_server_url}')
 
 # Compile the regex case-insensitive patterns
 substitutions_case_insensitive = {re.compile(pattern, re.IGNORECASE): replacement for pattern, replacement in config.substitutions_case_insensitive.items()}
@@ -111,11 +114,10 @@ def save_audio_to_file(data):
         wf.writeframes(b''.join(data))
     return filename
 
-
 def transcribe_audio_to_text(fname):
     printt(f"Transcribing {fname}...")
     with open(fname, 'rb') as f:
-        response = requests.post(config.transcribe_server, files={'file': f})
+        response = requests.post(transcribe_server_url, files={'file': f})
     printt(f"Transcription response: {response.text}")
     try:
         data = json.loads(response.text)
