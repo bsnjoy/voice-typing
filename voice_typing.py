@@ -116,7 +116,17 @@ def transcribe_audio_to_text(fname):
     printt(f"Transcribing {fname}...")
     with open(fname, 'rb') as f:
         response = requests.post(config.transcribe_server, files={'file': f})
-    return json.loads(response.text)
+    printt(f"Transcription response: {response.text}")
+    try:
+        data = json.loads(response.text)
+    except json.JSONDecodeError as e:
+        printt(f"Error decoding JSON response: {e}")
+        data = {'text': '', 'language': ''}
+    except Exception as e:
+        printt(f"Error unexpected decoding  JSON: {e}")
+        data = {'text': '', 'language': ''}
+
+    return data
 
 
 def check_keys_combination():
@@ -198,6 +208,11 @@ def stop_audio_stream():
     text = data['text']
     language = data['language']
     printt(f"Language: {language} Got result: {text}")
+
+    if len(text) < 2:
+        printt('No text detected. Exiting...')
+        processing_audio = False
+        return
 
     # Apply case-sensitive substitutions
     for old, new in config.substitutions_case_sensitive.items():
