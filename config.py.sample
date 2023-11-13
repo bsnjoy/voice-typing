@@ -26,6 +26,7 @@ hotkey_1 = keyboard.Key.cmd_r
 # on windows must use ctrl and alt modifirers with _l or _r suffix, shift should be just shift or shift_r on mac os can use anything everything without suffix. But will work with suffix also
 hotkey_2 = {keyboard.Key.ctrl_l, keyboard.Key.shift, keyboard.Key.alt_l, keyboard.KeyCode.from_char('j')}
 
+min_audio_duration_ms = 100  # minimum audio duration in milliseconds to send to server
 
 fallback_mic_index = 0
 # Use this command in shell to enumerate devices and their names to add to priority list:
@@ -46,4 +47,6 @@ mac_menu = [
 
 transcribe_server = 'http://demo.voicehotkey.com:5000/transcribe'
 languages = 'ru,en'
-token = 'my_token'
+
+# replace token value with your value
+token = '0174659ab45a4a7ca4008c2a5a884f22'

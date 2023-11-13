@@ -65,7 +65,7 @@ Example of approving Terminal app in Accessibility section:
 
 ## Update application
 ```
-# Stop appincation using Ctrl+C
+# Stop application using Ctrl+C
 git pull
 # Read in update.txt for possible updates needed to be made for config.py
 # Start the application:

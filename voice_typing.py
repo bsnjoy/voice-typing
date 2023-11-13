@@ -53,7 +53,7 @@ keys_pressed = set()
 
 recording_audio = False
 processing_audio = False
-
+record_start_time = None
 # Global declaration
 audio_stream = None
 
@@ -198,13 +198,22 @@ end tell
 
 
 def stop_audio_stream():
-    global audio_stream, audio_queue, processing_audio
+    global audio_stream, audio_queue, processing_audio, record_start_time
+    record_duration = (datetime.now() - record_start_time).total_seconds() * 1000
     audio_stream.stop()
     audio_stream.close()
     audio_data = []
     while not audio_queue.empty():
         audio_data.append(audio_queue.get())
+
+    audio_duration_ms = len(audio_data)* 1000000 / samplerate
+    printt(f'Finished recording audio. Got {len(audio_data)} frames. Audio duration: {audio_duration_ms} ms. Record duration: {record_duration} ms.')
     filename = save_audio_to_file(audio_data)
+
+    if audio_duration_ms < config.min_audio_duration_ms:
+        printt('Audio duration is too short. Exiting...')
+        processing_audio = False
+        return
 
     data = transcribe_audio_to_text(filename)
     text = data['text']
@@ -234,8 +243,9 @@ def stop_audio_stream():
     processing_audio = False
 
 def start_audio_stream():
-    global recording_audio, audio_stream, selected_mic
+    global recording_audio, audio_stream, selected_mic, record_start_time
     recording_audio = True
+    record_start_time = datetime.now()
     printt('Started recording audio...')
     audio_stream = sd.RawInputStream(samplerate=samplerate, blocksize=1000, device=selected_mic["index"],
                                     dtype="int16", channels=1, callback=callback)
