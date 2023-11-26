@@ -15,6 +15,7 @@ def on_press(key):
     except AttributeError:
         # If the key doesn't have a printable representation (like 'ctrl' or 'alt'), display its name
         printt('special key {0} pressed'.format(key))
+        print(key)
 
 def on_release(key):
     printt('{0} released'.format(key))

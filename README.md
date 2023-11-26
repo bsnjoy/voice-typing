@@ -19,11 +19,11 @@ sudo apt-get install -y xclip python3 python3-pip
 git clone https://github.com/bsnjoy/voice-typing.git
 
 cd voice-typing
-python3 -m pip install -r requirements.txt
+/usr/bin/env python3 -m pip install -r requirements.txt
 cp config.py.sample config.py
 
 # Print devices with microphone and their names to use in config file (only need for custom microphones):
-python3 list_devices.py
+/usr/bin/env python3 list_devices.py
 
 # edit config using your preferred editor:
 vim config.py

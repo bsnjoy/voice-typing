@@ -19,6 +19,9 @@ import config
 import subprocess
 import re
 
+app = 'voice-typing'
+ver = '0.020'
+
 # Disable the Fail-Safe, because we don't neet to stop a pyautogui script when mouse is moved to a corner of the screen
 pyautogui.FAILSAFE = False
 
@@ -26,7 +29,7 @@ stop_update_mic_thread = False
 keyboard_thread = None
 mic_update_thread = None
 
-transcribe_server_url = f"{config.transcribe_server}?token={config.token}&languages={config.languages}"
+transcribe_server_url = f"{config.transcribe_server}?token={config.token}&languages={config.languages}&app={app}-{ver}"
 
 # Convert the list of lists to an AppleScript list of lists format
 mac_menu_as = '{' + ', '.join(['{' + ', '.join(['"' + str(item[key]) + '"' for key in ['edit', 'paste']]) + '}' for item in config.mac_menu]) + '}'
