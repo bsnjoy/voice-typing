@@ -3,7 +3,7 @@ from pynput import keyboard
 # Substitutions for dictation. For example, if detected "...", it will be replaced with space " "
 # Case-sensitive substitutions. Try use this ones if possible, they are much more faster then case-insensitive.
 substitutions_case_sensitive = {
-    "...": " ",
+#    "...": " ",
     "Meet Journey": "MidJourney",
 }
 
