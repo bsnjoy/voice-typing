@@ -20,7 +20,7 @@ import subprocess
 import re
 
 app = 'voice-typing'
-ver = '0.020'
+ver = '0.231208'
 
 # Disable the Fail-Safe, because we don't neet to stop a pyautogui script when mouse is moved to a corner of the screen
 pyautogui.FAILSAFE = False
