@@ -29,7 +29,8 @@ stop_update_mic_thread = False
 keyboard_thread = None
 mic_update_thread = None
 
-transcribe_server_url = f"{config.transcribe_server}?token={config.token}&languages={config.languages}&app={app}-{ver}"
+#transcribe_server_url = f"{config.transcribe_server}?token={config.token}&languages={config.languages}&app={app}-{ver}"
+transcribe_server_url = f"{config.transcribe_server}?languages={config.languages}&app={app}-{ver}"
 
 # Convert the list of lists to an AppleScript list of lists format
 mac_menu_as = '{' + ', '.join(['{' + ', '.join(['"' + str(item[key]) + '"' for key in ['edit', 'paste']]) + '}' for item in config.mac_menu]) + '}'
